@@ -1,0 +1,21 @@
+#!/bin/env bash
+nParallel=${1:-50}
+
+echo "Starting $nParallel parallel requests"
+
+for (( i=1; i<=nParallel; i++ ))
+do
+    curl -X GET "http://localhost:3000/" &> /dev/null &
+    pids[i]=$!
+done
+
+for pid in "${pids[@]}"
+do
+    wait "$pid"
+done
+
+echo "Done"
+
+echo "Server says:"
+
+curl -X GET "http://localhost:3000/"
