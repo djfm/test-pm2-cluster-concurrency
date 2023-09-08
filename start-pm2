@@ -1,0 +1,2 @@
+#!/bin/env bash
+yarn pm2-runtime index.js
