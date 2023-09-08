@@ -2,31 +2,46 @@ const express = require('express');
 
 const app = express();
 
-let beingCalled = false;
+let isBeingCalledFlag = false;
+
+const beingCalled = async () => new Promise(resolve => {
+    setTimeout(() => {
+        resolve(isBeingCalledFlag);
+    }, Math.random() * 1000);
+});
+
+const setIsBeingCalled = async () => new Promise(resolve => {
+    setTimeout(() => {
+        isBeingCalledFlag = true;
+        resolve();
+    }, Math.random() * 1000);
+});
 
 const stats = {
-    total: 0,
-    concurrent: 0,
+    foiCalledTotal: 0,
+    foiCalledConcurrent: 0,
+    requestsTotal: 0,
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Function of interest
 const foi = async () => {
-    ++stats.total;
-    ++stats.concurrent;
+    ++stats.foiCalledTotal;
+    ++stats.foiCalledConcurrent;
 
     console.log(stats);
 
     await sleep(1000);
-    --stats.concurrent;
+    --stats.foiCalledConcurrent;
 }
 
 app.get('/', async (req, res) => {
-    if (!beingCalled) {
-        beingCalled = true;
+    ++stats.requestsTotal;
+
+    if (!await beingCalled()) {
+        await setIsBeingCalled();
         await foi();
-        beingCalled = false;
     }
 
     res.send(stats);
